@@ -51,14 +51,14 @@
             padding: 0 20px;
         }
 
-        /* Navigation */
+ /* Navigation */
         #navigation {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             z-index: 1000;
-            background: rgba(10, 10, 15, 0.95);
+            background: rgba(10, 14, 26, 0.95);
             backdrop-filter: blur(10px);
             border-bottom: 1px solid var(--border);
         }
@@ -79,6 +79,7 @@
             gap: 8px;
             font-weight: 600;
             color: var(--text-primary);
+            text-decoration: none;
         }
 
         .nav-logo svg {
@@ -102,11 +103,17 @@
             cursor: pointer;
             transition: all 0.2s;
             font-size: 14px;
+            text-decoration: none;
         }
 
         .nav-item:hover {
             color: var(--text-primary);
             background: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-item svg {
+            width: 16px;
+            height: 16px;
         }
 
         /* Hero Section */
@@ -1227,28 +1234,28 @@
                 <span>HUNT</span>
             </div>
             <div class="nav-items">
-                <button class="nav-item" onclick="scrollToTop()">
+                <a href="https://jademplays.github.io/hunt/" class="nav-item">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <circle cx="12" cy="12" r="10"/>
                         <circle cx="12" cy="12" r="6"/>
                         <circle cx="12" cy="12" r="2"/>
                     </svg>
                     HUNT
-                </button>
-                <button class="nav-item" onclick="scrollToSection('dimensions')">
+                </a>
+                <a href="https://jademplays.github.io/hunt/#dimensions" class="nav-item">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <circle cx="12" cy="12" r="3"/>
                         <path d="M12 1v6m0 6v6m6-12h-6m-6 0h6M5.64 5.64l4.24 4.24m4.24 4.24l4.24 4.24M5.64 18.36l4.24-4.24m4.24-4.24l4.24-4.24"/>
                     </svg>
                     Dimensions
-                </button>
-                <button class="nav-item" onclick="scrollToSection('philosophy')">
+                </a>
+                <a href="https://jademplays.github.io/hunt/#philosophy" class="nav-item">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                     </svg>
                     Philosophy
-                </button>
-                <button class="nav-item" onclick="scrollToSection('calculator')">
+                </a>
+                <a href="https://jademplays.github.io/hunt/#calculator" class="nav-item">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <rect x="4" y="2" width="16" height="20" rx="2"/>
                         <line x1="8" y1="6" x2="16" y2="6"/>
@@ -1257,8 +1264,8 @@
                         <line x1="8" y1="14" x2="8" y2="14.01"/>
                     </svg>
                     Evaluate
-                </button>
-                <button class="nav-item" onclick="scrollToSection('reviews')">
+                </a>
+                <a href="https://jademplays.github.io/hunt/reviews.html" class="nav-item">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                         <polyline points="14 2 14 8 20 8"/>
@@ -1267,7 +1274,7 @@
                         <polyline points="10 9 9 9 8 9"/>
                     </svg>
                     Reviews
-                </button>
+                </a>
             </div>
         </div>
     </nav>
@@ -1359,7 +1366,7 @@
                         </div>
                     </div>
                     <p class="axis-description">
-                        How motion, combat, and interaction feel when the game pushes back. This is not speed. This is control under constraint.
+                        How motion, combat, and interaction feel when the game pushes back. Speed helps, but this is control under constraint.
                     </p>
                     <ul class="axis-examples">
                         <li>Movement is gameplay</li>
