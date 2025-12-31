@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Reviews - HUNT Framework</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0a0e1a;
+            --bg-secondary: #0f1420;
+            --bg-tertiary: #141826;
+            --text-primary: #e8eaf0;
+            --text-secondary: #a8b0c8;
+            --text-muted: #6b7388;
+            --border: rgba(100, 120, 160, 0.15);
+            
+            --accent-blue: #3b82f6;
+            --accent-purple: #a855f7;
+            --accent-pink: #ec4899;
+            --accent-green: #22c55e;
+            --accent-yellow: #eab308;
+            --accent-cyan: #06b6d4;
+            
+            --theme-orange: #ff6b35;
+            --theme-orange-bright: #ff8c42;
+            --accent-orange: #ff6b35;
+            --accent-red: #d94a1a;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding-top: 64px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Navigation */
+        #navigation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: rgba(10, 14, 26, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 64px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+
+        .nav-logo svg {
+            color: var(--accent-blue);
+        }
+
+        .nav-items {
+            display: flex;
+            gap: 8px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 8px;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+            text-decoration: none;
+        }
+
+        .nav-item:hover {
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-item svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* Page Header */
+        .page-header {
+            padding: 80px 0 60px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Hexagon honeycomb pattern background */
+        .page-header::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            opacity: 0.08;
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='173.2' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M50 0l43.3 25v50l-43.3 25-43.3-25v-50z' fill='none' stroke='rgb(100,120,160)' stroke-width='1'/%3E%3Cpath d='M0 86.6l43.3 25v50l-43.3 25-43.3-25v-50z' fill='none' stroke='rgb(100,120,160)' stroke-width='1'/%3E%3Cpath d='M100 86.6l43.3 25v50l-43.3 25-43.3-25v-50z' fill='none' stroke='rgb(100,120,160)' stroke-width='1'/%3E%3C/svg%3E");
+            background-size: 100px 173.2px;
+            pointer-events: none;
+            mask-image: linear-gradient(to bottom, white 0%, white 70%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom, white 0%, white 70%, transparent 100%);
+            z-index: 0;
+        }
+
+        .page-header::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, transparent 0%, rgba(10, 14, 26, 0.5) 70%, rgba(10, 14, 26, 1) 100%);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .page-title {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, var(--theme-orange), var(--theme-orange-bright), #ffaa66);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            -webkit-text-stroke: 1px var(--theme-orange);
+            text-stroke: 1px var(--theme-orange);
+            filter: drop-shadow(0 0 12px rgba(255, 107, 53, 0.4));
+            position: relative;
+            z-index: 1;
+        }
+
+        .page-subtitle {
+            font-size: 18px;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Reviews Section */
+        .reviews-section {
+            padding: 40px 0 100px;
+        }
+
+        .reviews-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 24px;
+        }
+
+        .review-card {
+            flex: 1 1 450px;
+            max-width: calc(50% - 12px);
+        }
+
+        /* Force coming soon card to always be last */
+        .review-card.coming-soon {
+            order: 9999;
+        }
+
+        .review-card {
+            padding: 32px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .review-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(to right, var(--accent-blue), var(--accent-green), var(--accent-purple), var(--accent-yellow));
+        }
+
+        .review-card:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 16px;
+        }
+
+        .review-info {
+            flex: 1;
+        }
+
+        .review-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .review-subtitle {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .review-badge {
+            padding: 6px 12px;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 20px;
+            font-size: 11px;
+            color: var(--accent-blue);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        .review-tags {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            padding: 4px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .review-scores {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 20px;
+            padding: 16px 0;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .review-score {
+            flex: 1;
+            text-align: center;
+        }
+
+        .score-number {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .score-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .review-link {
+            pointer-events: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--accent-blue);
+            font-size: 14px;
+            font-weight: 500;
+            transition: gap 0.2s ease;
+        }
+
+        .review-link svg {
+            transition: transform 0.2s ease;
+        }
+
+        .review-card:hover .review-link {
+            gap: 12px;
+        }
+
+        .review-card:hover .review-link svg {
+            transform: translateX(4px);
+        }
+
+        .review-link.disabled {
+            color: var(--text-muted);
+            opacity: 0.5;
+        }
+
+        /* Provisional scores styling */
+        .review-score.provisional {
+            opacity: 0.6;
+            position: relative;
+        }
+
+        .review-score.provisional::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border: 1px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+            pointer-events: none;
+        }
+
+        .review-score.provisional .score-number {
+            color: var(--text-muted) !important;
+        }
+
+        .coming-soon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 300px;
+            background: rgba(255, 255, 255, 0.01);
+            border-style: dashed;
+        }
+
+        .coming-soon-content {
+            text-align: center;
+        }
+
+        .coming-soon-content h3 {
+            font-size: 20px;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .coming-soon-content p {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        /* Color classes */
+        .text-blue { color: var(--accent-blue); }
+        .text-green { color: var(--accent-green); }
+        .text-purple { color: var(--accent-purple); }
+        .text-yellow { color: var(--accent-yellow); }
+        .text-red { color: var(--accent-red); }
+
+        @media (max-width: 768px) {
+            .review-card {
+                max-width: 100%;
+                flex: 1 1 100%;
+            }
+            
+            .page-title {
+                font-size: 36px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav id="navigation">
+        <div class="nav-content">
+            <div class="nav-logo">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <circle cx="12" cy="12" r="4"/>
+                </svg>
+                <span>HUNT</span>
+            </div>
+            <div class="nav-items">
+                <a href="https://nakauri.github.io/JademHunts/" class="nav-item">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <circle cx="12" cy="12" r="6"/>
+                        <circle cx="12" cy="12" r="2"/>
+                    </svg>
+                    HUNT
+                </a>
+                <a href="https://nakauri.github.io/JademHunts/#dimensions" class="nav-item">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M12 1v6m0 6v6m6-12h-6m-6 0h6M5.64 5.64l4.24 4.24m4.24 4.24l4.24 4.24M5.64 18.36l4.24-4.24m4.24-4.24l4.24-4.24"/>
+                    </svg>
+                    Dimensions
+                </a>
+                <a href="https://nakauri.github.io/JademHunts/#philosophy" class="nav-item">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    Philosophy
+                </a>
+                <a href="https://nakauri.github.io/JademHunts/#calculator" class="nav-item">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="4" y="2" width="16" height="20" rx="2"/>
+                        <line x1="8" y1="6" x2="16" y2="6"/>
+                        <line x1="16" y1="14" x2="16" y2="14.01"/>
+                        <line x1="12" y1="14" x2="12" y2="14.01"/>
+                        <line x1="8" y1="14" x2="8" y2="14.01"/>
+                    </svg>
+                    Evaluate
+                </a>
+                <a href="https://nakauri.github.io/JademHunts/reviews.html" class="nav-item">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                        <polyline points="10 9 9 9 8 9"/>
+                    </svg>
+                    Reviews
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="container">
+            <h1 class="page-title">Game Reviews</h1>
+            <p class="page-subtitle">Games evaluated through the HUNT framework</p>
+        </div>
+    </div>
+
+    <!-- Reviews Section -->
+    <section class="reviews-section">
+        <div class="container">
+            <div class="reviews-grid">
+                
+                <!-- Armored Core 6 -->
+                <a href="https://nakauri.github.io/JademHunts/armoredcore6.html" class="review-card">
+                    <div class="review-header">
+                        <div class="review-info">
+                            <h3 class="review-title">Armored Core 6: Fires of Rubicon</h3>
+                            <p class="review-subtitle">Mech combat where keyboard and mouse actually works</p>
+                        </div>
+                    </div>
+                    <div class="review-scores">
+                        <div class="review-score">
+                            <div class="score-number text-green">9</div>
+                            <div class="score-label">H</div>
+                        </div>
+                        <div class="review-score">
+                            <div class="score-number text-blue">8</div>
+                            <div class="score-label">U</div>
+                        </div>
+                        <div class="review-score">
+                            <div class="score-number text-yellow">6</div>
+                            <div class="score-label">N</div>
+                        </div>
+                        <div class="review-score">
+                            <div class="score-number text-green">9</div>
+                            <div class="score-label">T</div>
+                        </div>
+                    </div>
+                    <span class="review-link">
+                        Read Full Review
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="5" y1="12" x2="19" y2="12"/>
+                            <polyline points="12 5 19 12 12 19"/>
+                        </svg>
+                    </span>
+                </a>
+                
+                <!-- Vintage Story -->
+                <a href="https://nakauri.github.io/JademHunts/vintagestory.html" class="review-card">
+                    <div class="review-header">
+                        <div class="review-info">
+                            <h3 class="review-title">Vintage Story</h3>
+                            <p class="review-subtitle">Survival through actual knowledge, not quest markers</p>
+                        </div>
+                    </div>
+                    <div class="review-scores">
+                        <div class="review-score">
+                            <div class="score-number text-red">3</div>
+                            <div class="score-label">H</div>
+                        </div>
+                        <div class="review-score">
+                            <div class="score-number text-green">9</div>
+                            <div class="score-label">U</div>
+                        </div>
+                        <div class="review-score">
+                            <div class="score-number text-green">10</div>
+                            <div class="score-label">N</div>
+                        </div>
+                        <div class="review-score">
+                            <div class="score-number text-green">9</div>
+                            <div class="score-label">T</div>
+                        </div>
+                    </div>
+                    <span class="review-link">
+                        Read Full Review
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="5" y1="12" x2="19" y2="12"/>
+                            <polyline points="12 5 19 12 12 19"/>
+                        </svg>
+                    </span>
+                </a>
+
+                <!-- World of Warcraft: The War Within (Hunter) -->
+                <a href="https://nakauri.github.io/JademHunts/warcraft.html" class="review-card">
+                    <div class="review-header">
+                        <div class="review-info">
+                            <h3 class="review-title">World of Warcraft: The War Within</h3>
+                            <p class="review-subtitle">Hunter class from Vanilla to The War Within</p>
+                        </div>
+                        </div>
+                    <div class="review-scores">
+                        <div class="review-score">
+                            <div class="score-number text-red">1</div>
+                            <div class="score-label">H</div>
+                        </div>
+                        <div class="review-score">
+                            <div class="score-number text-yellow">5</div>
+                            <div class="score-label">U</div>
+                        </div>
+                        <div class="review-score">
+                            <div class="score-number text-red">3</div>
+                            <div class="score-label">N</div>
+                        </div>
+                        <div class="review-score">
+                            <div class="score-number text-yellow">4</div>
+                            <div class="score-label">T</div>
+                        </div>
+                    </div>
+                    <span class="review-link">
+                        Read Full Review
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="5" y1="12" x2="19" y2="12"/>
+                            <polyline points="12 5 19 12 12 19"/>
+                        </svg>
+                    </span>
+                </a>
+
+                <!-- Dinoblade -->
+                <div class="review-card">
+                    <div class="review-header">
+                        <div class="review-info">
+                            <h3 class="review-title">Dinoblade</h3>
+                            <p class="review-subtitle">Fast paced dino combat with precision mechanics</p>
+                        </div>
+                        </div>
+                    <div class="review-scores">
+                        <div class="review-score provisional" title="Provisional score - still being evaluated">
+                            <div class="score-number text-blue">8</div>
+                            <div class="score-label">H</div>
+                        </div>
+                        <div class="review-score provisional" title="Provisional score - still being evaluated">
+                            <div class="score-number text-yellow">6</div>
+                            <div class="score-label">U</div>
+                        </div>
+                        <div class="review-score provisional" title="Provisional score - still being evaluated">
+                            <div class="score-number text-yellow">5</div>
+                            <div class="score-label">N</div>
+                        </div>
+                        <div class="review-score provisional" title="Provisional score - still being evaluated">
+                            <div class="score-number text-blue">7</div>
+                            <div class="score-label">T</div>
+                        </div>
+                    </div>
+                    <span class="review-link disabled">
+                        Review in progress
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="5" y1="12" x2="19" y2="12"/>
+                            <polyline points="12 5 19 12 12 19"/>
+                        </svg>
+                    </span>
+                </div>
+
+                <!-- Wheel World -->
+                <div class="review-card">
+                    <div class="review-header">
+                        <div class="review-info">
+                            <h3 class="review-title">Wheel World</h3>
+                            <p class="review-subtitle">Rolling through worlds with physics based movement</p>
+                        </div>
+                        </div>
+                    <div class="review-scores">
+                        <div class="review-score provisional" title="Provisional score - still being evaluated">
+                            <div class="score-number text-blue">7</div>
+                            <div class="score-label">H</div>
+                        </div>
+                        <div class="review-score provisional" title="Provisional score - still being evaluated">
+                            <div class="score-number text-yellow">5</div>
+                            <div class="score-label">U</div>
+                        </div>
+                        <div class="review-score provisional" title="Provisional score - still being evaluated">
+                            <div class="score-number text-yellow">6</div>
+                            <div class="score-label">N</div>
+                        </div>
+                        <div class="review-score provisional" title="Provisional score - still being evaluated">
+                            <div class="score-number text-yellow">5</div>
+                            <div class="score-label">T</div>
+                        </div>
+                    </div>
+                    <span class="review-link disabled">
+                        Review in progress
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="5" y1="12" x2="19" y2="12"/>
+                            <polyline points="12 5 19 12 12 19"/>
+                        </svg>
+                    </span>
+                </div>
+
+                <!-- Enshrouded -->
+                <div class="review-card">
+                    <div class="review-header">
+                        <div class="review-info">
+                            <h3 class="review-title">Enshrouded</h3>
+                            <p class="review-subtitle">Voxel survival with combat focus and building</p>
+                        </div>
+                        </div>
+                    <div class="review-scores">
+                        <div class="review-score provisional" title="Provisional score - still being evaluated">
+                            <div class="score-number text-red">3</div>
+                            <div class="score-label">H</div>
+                        </div>
+                        <div class="review-score provisional" title="Provisional score - still being evaluated">
+                            <div class="score-number text-yellow">6</div>
+                            <div class="score-label">U</div>
+                        </div>
+                        <div class="review-score provisional" title="Provisional score - still being evaluated">
+                            <div class="score-number text-yellow">4</div>
+                            <div class="score-label">N</div>
+                        </div>
+                        <div class="review-score provisional" title="Provisional score - still being evaluated">
+                            <div class="score-number text-red">2</div>
+                            <div class="score-label">T</div>
+                        </div>
+                    </div>
+                    <span class="review-link disabled">
+                        Review in progress
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="5" y1="12" x2="19" y2="12"/>
+                            <polyline points="12 5 19 12 12 19"/>
+                        </svg>
+                    </span>
+                </div>
+
+                <!-- Kenshi -->
+                <div class="review-card">
+                    <div class="review-header">
+                        <div class="review-info">
+                            <h3 class="review-title">Kenshi</h3>
+                            <p class="review-subtitle">Open world sandbox RPG with emergent gameplay</p>
+                        </div>
+                        </div>
+                    <div class="review-scores">
+                        <div class="review-score provisional" title="Provisional score - still being evaluated">
+                            <div class="score-number text-red">3</div>
+                            <div class="score-label">H</div>
+                        </div>
+                        <div class="review-score provisional" title="Provisional score - still being evaluated">
+                            <div class="score-number text-green">9</div>
+                            <div class="score-label">U</div>
+                        </div>
+                        <div class="review-score provisional" title="Provisional score - still being evaluated">
+                            <div class="score-number text-green">9</div>
+                            <div class="score-label">N</div>
+                        </div>
+                        <div class="review-score provisional" title="Provisional score - still being evaluated">
+                            <div class="score-number text-blue">7</div>
+                            <div class="score-label">T</div>
+                        </div>
+                    </div>
+                    <span class="review-link disabled">
+                        Review in progress
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="5" y1="12" x2="19" y2="12"/>
+                            <polyline points="12 5 19 12 12 19"/>
+                        </svg>
+                    </span>
+                </div>
+
+                <!-- ARK: Survival Ascended -->
+                <div class="review-card">
+                    <div class="review-header">
+                        <div class="review-info">
+                            <h3 class="review-title">ARK: Survival Ascended</h3>
+                            <p class="review-subtitle">Dinosaur taming and base building survival</p>
+                        </div>
+                        </div>
+                    <div class="review-scores">
+                        <div class="review-score provisional" title="Provisional score - still being evaluated">
+                            <div class="score-number text-red">3</div>
+                            <div class="score-label">H</div>
+                        </div>
+                        <div class="review-score provisional" title="Provisional score - still being evaluated">
+                            <div class="score-number text-yellow">6</div>
+                            <div class="score-label">U</div>
+                        </div>
+                        <div class="review-score provisional" title="Provisional score - still being evaluated">
+                            <div class="score-number text-yellow">5</div>
+                            <div class="score-label">N</div>
+                        </div>
+                        <div class="review-score provisional" title="Provisional score - still being evaluated">
+                            <div class="score-number text-yellow">5</div>
+                            <div class="score-label">T</div>
+                        </div>
+                    </div>
+                    <span class="review-link disabled">
+                        Review in progress
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="5" y1="12" x2="19" y2="12"/>
+                            <polyline points="12 5 19 12 12 19"/>
+                        </svg>
+                    </span>
+                </div>
+
+                <!-- Monster Hunter World (Insect Glaive) -->
+                <div class="review-card">
+                    <div class="review-header">
+                        <div class="review-info">
+                            <h3 class="review-title">Monster Hunter World</h3>
+                            <p class="review-subtitle">Insect Glaive: aerial combat with mobility mastery</p>
+                        </div>
+                        </div>
+                    <div class="review-scores">
+                        <div class="review-score provisional" title="Provisional score - still being evaluated">
+                            <div class="score-number text-blue">8</div>
+                            <div class="score-label">H</div>
+                        </div>
+                        <div class="review-score provisional" title="Provisional score - still being evaluated">
+                            <div class="score-number text-blue">7</div>
+                            <div class="score-label">U</div>
+                        </div>
+                        <div class="review-score provisional" title="Provisional score - still being evaluated">
+                            <div class="score-number text-yellow">6</div>
+                            <div class="score-label">N</div>
+                        </div>
+                        <div class="review-score provisional" title="Provisional score - still being evaluated">
+                            <div class="score-number text-blue">8</div>
+                            <div class="score-label">T</div>
+                        </div>
+                    </div>
+                    <span class="review-link disabled">
+                        Review in progress
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="5" y1="12" x2="19" y2="12"/>
+                            <polyline points="12 5 19 12 12 19"/>
+                        </svg>
+                    </span>
+                </div>
+
+                <!-- Dune: Awakening -->
+                <div class="review-card">
+                    <div class="review-header">
+                        <div class="review-info">
+                            <h3 class="review-title">Dune: Awakening</h3>
+                            <p class="review-subtitle">Survival MMO in the harsh world of Arrakis</p>
+                        </div>
+                        </div>
+                    <div class="review-scores">
+                        <div class="review-score provisional" title="Provisional score - still being evaluated">
+                            <div class="score-number text-red">3</div>
+                            <div class="score-label">H</div>
+                        </div>
+                        <div class="review-score provisional" title="Provisional score - still being evaluated">
+                            <div class="score-number text-blue">7</div>
+                            <div class="score-label">U</div>
+                        </div>
+                        <div class="review-score provisional" title="Provisional score - still being evaluated">
+                            <div class="score-number text-yellow">6</div>
+                            <div class="score-label">N</div>
+                        </div>
+                        <div class="review-score provisional" title="Provisional score - still being evaluated">
+                            <div class="score-number text-yellow">5</div>
+                            <div class="score-label">T</div>
+                        </div>
+                    </div>
+                    <span class="review-link disabled">
+                        Review in progress
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="5" y1="12" x2="19" y2="12"/>
+                            <polyline points="12 5 19 12 12 19"/>
+                        </svg>
+                    </span>
+                </div>
+
+                <!-- Coming Soon Card -->
+                <div class="review-card coming-soon">
+                    <div class="coming-soon-content">
+                        <h3>More reviews coming soon</h3>
+                        <p>Currently hunting through my backlog</p>
+                    </div>
+                </div>
+
+
+                <!-- Pax Dei -->
+                <div class="review-card">
+                    <div class="review-header">
+                        <div class="review-info">
+                            <h3 class="review-title">Pax Dei</h3>
+                            <p class="review-subtitle">Medieval MMO with deep crafting systems</p>
+                        </div>
+                    </div>
+                    <div class="review-scores">
+                        <div class="review-score provisional" title="Provisional score - still being evaluated">
+                            <div class="score-number text-red">2</div>
+                            <div class="score-label">H</div>
+                        </div>
+                        <div class="review-score provisional" title="Provisional score - still being evaluated">
+                            <div class="score-number text-yellow">4</div>
+                            <div class="score-label">U</div>
+                        </div>
+                        <div class="review-score provisional" title="Provisional score - still being evaluated">
+                            <div class="score-number text-yellow">6</div>
+                            <div class="score-label">N</div>
+                        </div>
+                        <div class="review-score provisional" title="Provisional score - still being evaluated">
+                            <div class="score-number text-blue">7</div>
+                            <div class="score-label">T</div>
+                        </div>
+                    </div>
+                    <span class="review-link disabled">
+                        Review in progress
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="5" y1="12" x2="19" y2="12"/>
+                            <polyline points="12 5 19 12 12 19"/>
+                        </svg>
+                    </span>
+                </div>
+
+                <!-- Palworld -->
+                <div class="review-card">
+                    <div class="review-header">
+                        <div class="review-info">
+                            <h3 class="review-title">Palworld</h3>
+                            <p class="review-subtitle">Monster catching meets survival automation</p>
+                        </div>
+                        </div>
+                    <div class="review-scores">
+                        <div class="review-score provisional" title="Provisional score - still being evaluated">
+                            <div class="score-number text-yellow">4</div>
+                            <div class="score-label">H</div>
+                        </div>
+                        <div class="review-score provisional" title="Provisional score - still being evaluated">
+                            <div class="score-number text-yellow">5</div>
+                            <div class="score-label">U</div>
+                        </div>
+                        <div class="review-score provisional" title="Provisional score - still being evaluated">
+                            <div class="score-number text-red">3</div>
+                            <div class="score-label">N</div>
+                        </div>
+                        <div class="review-score provisional" title="Provisional score - still being evaluated">
+                            <div class="score-number text-red">2</div>
+                            <div class="score-label">T</div>
+                        </div>
+                    </div>
+                    <span class="review-link disabled">
+                        Review in progress
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="5" y1="12" x2="19" y2="12"/>
+                            <polyline points="12 5 19 12 12 19"/>
+                        </svg>
+                    </span>
+                </div>
+
+                            </div>
+        </div>
+    </section>
+</body>
+</html>

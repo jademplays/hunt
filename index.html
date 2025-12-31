@@ -1,0 +1,1842 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HUNT Framework - Game Evaluation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0a0e1a;
+            --bg-secondary: #0f1420;
+            --bg-tertiary: #141826;
+            --text-primary: #e8eaf0;
+            --text-secondary: #a8b0c8;
+            --text-muted: #6b7388;
+            --border: rgba(100, 120, 160, 0.15);
+            
+            /* HUNT dimension colors - keep these */
+            --accent-blue: #3b82f6;
+            --accent-purple: #a855f7;
+            --accent-pink: #ec4899;
+            --accent-green: #22c55e;
+            --accent-yellow: #eab308;
+            --accent-cyan: #06b6d4;
+            
+            /* Theme colors - vibrant neon orange/copper */
+            --theme-orange: #ff6b35;
+            --theme-orange-bright: #ff8c42;
+            --theme-orange-glow: rgba(255, 107, 53, 0.4);
+            --theme-steel: #2d3748;
+            --accent-orange: #ff6b35;
+            --accent-red: #d94a1a;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Navigation */
+        #navigation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: rgba(10, 10, 15, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 64px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .nav-logo svg {
+            color: var(--accent-blue);
+        }
+
+        .nav-items {
+            display: flex;
+            gap: 8px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 8px;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+
+        .nav-item:hover {
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Hero Section */
+        .hero {
+            position: relative;
+            padding: 100px 0 60px;
+            text-align: center;
+            overflow: hidden;
+            min-height: 70vh;
+            display: flex;
+            align-items: center;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: 
+                radial-gradient(circle at 50% 30%, rgba(255, 107, 53, 0.15), transparent 50%),
+                radial-gradient(circle at 15% 20%, rgba(59, 130, 246, 0.08), transparent 40%),
+                linear-gradient(to bottom, 
+                    rgba(10, 14, 26, 0) 0%, 
+                    rgba(10, 14, 26, 0) 65%, 
+                    rgba(10, 14, 26, 0.5) 80%,
+                    rgba(10, 14, 26, 1) 100%
+                );
+        }
+
+        /* Hexagon honeycomb pattern background using SVG */
+        .hero::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            opacity: 0.08;
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='173.2' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M50 0l43.3 25v50l-43.3 25-43.3-25v-50z' fill='none' stroke='rgb(100,120,160)' stroke-width='1'/%3E%3Cpath d='M0 86.6l43.3 25v50l-43.3 25-43.3-25v-50z' fill='none' stroke='rgb(100,120,160)' stroke-width='1'/%3E%3Cpath d='M100 86.6l43.3 25v50l-43.3 25-43.3-25v-50z' fill='none' stroke='rgb(100,120,160)' stroke-width='1'/%3E%3C/svg%3E");
+            background-size: 100px 173.2px;
+            pointer-events: none;
+            mask-image: linear-gradient(to bottom, white 0%, white 70%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom, white 0%, white 70%, transparent 100%);
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 24px;
+            background: linear-gradient(to right, rgba(255, 107, 53, 0.15), rgba(59, 130, 246, 0.15));
+            border: 1px solid rgba(255, 107, 53, 0.4);
+            border-radius: 50px;
+            margin-bottom: 32px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--theme-orange-bright);
+            box-shadow: 0 0 20px rgba(255, 107, 53, 0.2);
+        }
+
+        .hero h1 {
+            font-size: 64px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            color: rgba(255, 140, 66, 0.3);
+            -webkit-text-stroke: 2px var(--theme-orange);
+            text-stroke: 2px var(--theme-orange);
+            line-height: 1.2;
+            letter-spacing: -1px;
+            filter: drop-shadow(0 0 20px rgba(255, 107, 53, 0.6)) 
+                    drop-shadow(0 0 40px rgba(255, 107, 53, 0.3));
+        }
+
+        .hero-subtitle {
+            font-size: 22px;
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.7;
+        }
+
+        .hero-subtitle span {
+            font-weight: 600;
+        }
+
+        .hero-cta {
+            font-size: 32px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--theme-orange), var(--theme-orange-bright), #ffaa66);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 48px;
+            filter: drop-shadow(0 0 15px rgba(255, 107, 53, 0.5))
+                    drop-shadow(0 0 30px rgba(255, 107, 53, 0.2));
+        }
+
+        .hero-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .hero-card {
+            padding: 24px 20px;
+            background: linear-gradient(135deg, rgba(20, 24, 38, 0.8), rgba(45, 55, 72, 0.4));
+            border: 1px solid rgba(100, 120, 160, 0.15);
+            border-radius: 16px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .hero-card::before {
+            content: '';
+            position: absolute;
+            inset: -100%;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
+            filter: blur(40px);
+        }
+
+        .hero-card.blue::before {
+            background: radial-gradient(circle, var(--accent-blue) 0%, transparent 70%);
+        }
+
+        .hero-card.green::before {
+            background: radial-gradient(circle, var(--accent-green) 0%, transparent 70%);
+        }
+
+        .hero-card.purple::before {
+            background: radial-gradient(circle, var(--accent-purple) 0%, transparent 70%);
+        }
+
+        .hero-card.yellow::before {
+            background: radial-gradient(circle, var(--accent-yellow) 0%, transparent 70%);
+        }
+
+        .hero-card:hover::before {
+            opacity: 0.4;
+        }
+
+        .hero-card:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-8px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .hero-card.blue:hover {
+            box-shadow: 0 20px 60px rgba(59, 130, 246, 0.3);
+        }
+
+        .hero-card.green:hover {
+            box-shadow: 0 20px 60px rgba(34, 197, 94, 0.3);
+        }
+
+        .hero-card.purple:hover {
+            box-shadow: 0 20px 60px rgba(168, 85, 247, 0.3);
+        }
+
+        .hero-card.yellow:hover {
+            box-shadow: 0 20px 60px rgba(234, 179, 8, 0.3);
+        }
+
+        .hero-card-letter {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .hero-card:hover .hero-card-letter {
+            transform: scale(1.05);
+            filter: drop-shadow(0 0 20px currentColor);
+        }
+
+        .hero-card-icon {
+            font-size: 24px;
+            margin-bottom: 12px;
+            opacity: 0.9;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .hero-card:hover .hero-card-icon {
+            opacity: 1;
+            transform: scale(1.1);
+            filter: drop-shadow(0 0 10px currentColor);
+        }
+
+        .hero-card-name {
+            font-size: 14px;
+            color: var(--text-secondary);
+            position: relative;
+            font-weight: 500;
+            margin-top: 0;
+        }
+
+        /* Section Styling */
+        section {
+            padding: 80px 0;
+            position: relative;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 64px;
+        }
+
+        .section-title {
+            font-size: 36px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, var(--theme-orange), var(--theme-orange-bright), #ffaa66);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            -webkit-text-stroke: 1px var(--theme-orange);
+            text-stroke: 1px var(--theme-orange);
+            filter: drop-shadow(0 0 12px rgba(255, 107, 53, 0.4))
+                    drop-shadow(0 0 24px rgba(255, 107, 53, 0.2));
+        }
+
+        .section-subtitle {
+            font-size: 20px;
+            color: var(--text-secondary);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        /* Axis Cards */
+        .axis-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 32px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .axis-card {
+            padding: 32px;
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, rgba(255, 255, 255, 0.02) 100%);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .axis-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .axis-card.blue::before {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+        }
+
+        .axis-card.green::before {
+            background: linear-gradient(135deg, var(--accent-green), #10b981);
+        }
+
+        .axis-card.purple::before {
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
+        }
+
+        .axis-card.yellow::before {
+            background: linear-gradient(135deg, var(--accent-yellow), var(--accent-orange));
+        }
+
+        .axis-card:hover::before {
+            opacity: 0.08;
+        }
+
+        .axis-card:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .axis-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .axis-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            flex-shrink: 0;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            color: white;
+            position: relative;
+        }
+
+        .axis-icon::after {
+            content: '';
+            position: absolute;
+            inset: -15px;
+            border-radius: 16px;
+            transition: opacity 0.3s ease;
+            filter: blur(15px);
+            z-index: -1;
+        }
+
+        .axis-icon.blue {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+        }
+
+        .axis-icon.blue::after {
+            background: var(--accent-blue);
+            opacity: 0.15;
+        }
+
+        .axis-icon.green {
+            background: linear-gradient(135deg, var(--accent-green), #10b981);
+        }
+
+        .axis-icon.green::after {
+            background: var(--accent-green);
+            opacity: 0.15;
+        }
+
+        .axis-icon.purple {
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
+        }
+
+        .axis-icon.purple::after {
+            background: var(--accent-purple);
+            opacity: 0.15;
+        }
+
+        .axis-icon.yellow {
+            background: linear-gradient(135deg, var(--accent-yellow), var(--accent-orange));
+        }
+
+        .axis-icon.yellow::after {
+            background: var(--accent-yellow);
+            opacity: 0.15;
+        }
+
+        .axis-card:hover .axis-icon::after {
+            opacity: 0.25;
+        }
+
+        .axis-card:hover .axis-icon {
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+            transform: scale(1.05);
+        }
+
+        .axis-card:hover .axis-icon.blue {
+            box-shadow: 0 12px 40px rgba(59, 130, 246, 0.3);
+        }
+
+        .axis-card:hover .axis-icon.green {
+            box-shadow: 0 12px 40px rgba(34, 197, 94, 0.3);
+        }
+
+        .axis-card:hover .axis-icon.purple {
+            box-shadow: 0 12px 40px rgba(168, 85, 247, 0.3);
+        }
+
+        .axis-card:hover .axis-icon.yellow {
+            box-shadow: 0 12px 40px rgba(234, 179, 8, 0.3);
+        }
+
+        .axis-title-group h3 {
+            font-size: 20px;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+        }
+
+        .axis-letter {
+            font-size: 32px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .axis-letter.blue {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .axis-letter.green {
+            background: linear-gradient(135deg, var(--accent-green), #10b981);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .axis-letter.purple {
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .axis-letter.yellow {
+            background: linear-gradient(135deg, var(--accent-yellow), var(--accent-orange));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .axis-title {
+            font-size: 20px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .axis-subtitle {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .axis-description {
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+            line-height: 1.8;
+        }
+
+        .axis-examples {
+            list-style: none;
+        }
+
+        .axis-examples li {
+            display: flex;
+            align-items: start;
+            gap: 8px;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .axis-examples li::before {
+            content: '•';
+            flex-shrink: 0;
+            margin-top: 2px;
+            font-weight: 700;
+        }
+
+        .axis-card.blue .axis-examples li::before {
+            color: var(--accent-blue);
+        }
+
+        .axis-card.green .axis-examples li::before {
+            color: var(--accent-green);
+        }
+
+        .axis-card.purple .axis-examples li::before {
+            color: var(--accent-purple);
+        }
+
+        .axis-card.yellow .axis-examples li::before {
+            color: var(--accent-yellow);
+        }
+
+        /* Philosophy Cards */
+        .philosophy-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+            margin-bottom: 80px;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .philosophy-card {
+            padding: 32px;
+            background: linear-gradient(135deg, var(--bg-secondary), rgba(255, 255, 255, 0.02));
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            transition: all 0.3s;
+        }
+
+        .philosophy-card:hover {
+            border-color: rgba(168, 85, 247, 0.3);
+            transform: translateY(-4px);
+        }
+
+        .philosophy-card h3 {
+            font-size: 20px;
+            margin-bottom: 12px;
+            background: linear-gradient(to right, var(--accent-blue), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .philosophy-card p {
+            color: var(--text-secondary);
+        }
+
+        /* Warning Patterns */
+        .warning-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-bottom: 48px;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .warning-card {
+            padding: 24px;
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(249, 115, 22, 0.1));
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 12px;
+            transition: all 0.3s;
+        }
+
+        .warning-card:hover {
+            border-color: rgba(239, 68, 68, 0.4);
+        }
+
+        .warning-pattern {
+            font-family: 'Courier New', monospace;
+            color: var(--accent-yellow);
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .warning-result {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .sustainability-note {
+            text-align: center;
+            font-size: 18px;
+            color: var(--text-secondary);
+            margin-top: 48px;
+        }
+
+        .sustainability-note .text-green {
+            color: var(--accent-green);
+            font-weight: 600;
+        }
+
+        /* Calculator Section */
+        .calculator-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 24px;
+            background: linear-gradient(to right, rgba(255, 107, 53, 0.2), rgba(255, 140, 66, 0.2));
+            border: 1px solid rgba(255, 107, 53, 0.4);
+            border-radius: 50px;
+            margin-bottom: 24px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--theme-orange-bright);
+            box-shadow: 0 0 15px rgba(255, 107, 53, 0.2);
+        }
+
+        .calculator-badge svg {
+            color: var(--theme-orange);
+            filter: drop-shadow(0 0 8px rgba(255, 107, 53, 0.4));
+        }
+
+        .calculator-wrapper {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: linear-gradient(to right, rgba(59, 130, 246, 0.1), rgba(168, 85, 247, 0.1));
+            padding: 2px;
+            border-radius: 16px;
+        }
+
+        .calculator-inner {
+            background: var(--bg-secondary);
+            border-radius: 14px;
+            padding: 40px;
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            background: var(--bg-secondary);
+        }
+
+        textarea.form-input {
+            min-height: 100px;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        /* Slider */
+        .slider-group {
+            margin-bottom: 32px;
+        }
+
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 8px;
+        }
+
+        .slider-label {
+            font-weight: 500;
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+        }
+
+        .slider-letter {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .slider-title {
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .slider-value {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .slider-subtitle {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.1);
+            outline: none;
+            -webkit-appearance: none;
+            position: relative;
+        }
+
+        /* Filled track styling with gradients */
+        input[type="range"].blue {
+            background: linear-gradient(to right, 
+                var(--accent-blue) 0%, 
+                var(--accent-blue) var(--fill-percent), 
+                rgba(255, 255, 255, 0.1) var(--fill-percent), 
+                rgba(255, 255, 255, 0.1) 100%);
+        }
+
+        input[type="range"].green {
+            background: linear-gradient(to right, 
+                var(--accent-green) 0%, 
+                var(--accent-green) var(--fill-percent), 
+                rgba(255, 255, 255, 0.1) var(--fill-percent), 
+                rgba(255, 255, 255, 0.1) 100%);
+        }
+
+        input[type="range"].purple {
+            background: linear-gradient(to right, 
+                var(--accent-purple) 0%, 
+                var(--accent-purple) var(--fill-percent), 
+                rgba(255, 255, 255, 0.1) var(--fill-percent), 
+                rgba(255, 255, 255, 0.1) 100%);
+        }
+
+        input[type="range"].yellow {
+            background: linear-gradient(to right, 
+                var(--accent-yellow) 0%, 
+                var(--accent-yellow) var(--fill-percent), 
+                rgba(255, 255, 255, 0.1) var(--fill-percent), 
+                rgba(255, 255, 255, 0.1) 100%);
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: white;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+            border: 2px solid rgba(0, 0, 0, 0.2);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: white;
+            cursor: pointer;
+            border: 2px solid rgba(0, 0, 0, 0.2);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Firefox filled track */
+        input[type="range"].blue::-moz-range-progress {
+            background: var(--accent-blue);
+            height: 6px;
+            border-radius: 3px;
+        }
+
+        input[type="range"].green::-moz-range-progress {
+            background: var(--accent-green);
+            height: 6px;
+            border-radius: 3px;
+        }
+
+        input[type="range"].purple::-moz-range-progress {
+            background: var(--accent-purple);
+            height: 6px;
+            border-radius: 3px;
+        }
+
+        input[type="range"].yellow::-moz-range-progress {
+            background: var(--accent-yellow);
+            height: 6px;
+            border-radius: 3px;
+        }
+
+        /* Reviews Section */
+        .reviews-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+            gap: 24px;
+        }
+
+        .review-card {
+            padding: 32px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .review-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(to right, var(--accent-blue), var(--accent-green), var(--accent-purple), var(--accent-yellow));
+        }
+
+        .review-card:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .review-card.coming-soon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 300px;
+            background: rgba(255, 255, 255, 0.01);
+            border-style: dashed;
+        }
+
+        .coming-soon-content {
+            text-align: center;
+        }
+
+        .coming-soon-content h3 {
+            font-size: 20px;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .coming-soon-content p {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 16px;
+        }
+
+        .review-info {
+            flex: 1;
+        }
+
+        .review-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .review-subtitle {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .review-badge {
+            padding: 6px 12px;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 20px;
+            font-size: 11px;
+            color: var(--accent-blue);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .review-tags {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            padding: 4px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .review-scores {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 20px;
+            padding: 16px 0;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .review-score {
+            flex: 1;
+            text-align: center;
+        }
+
+        .score-number {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .score-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .review-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--accent-blue);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: gap 0.2s ease;
+        }
+
+        .review-link:hover {
+            gap: 12px;
+        }
+
+        .review-link svg {
+            transition: transform 0.2s ease;
+        }
+
+        .review-link:hover svg {
+            transform: translateX(4px);
+        }
+
+        /* Reference Sidebar */
+        .scorer-layout {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 40px;
+        }
+
+        .reference-card {
+            position: sticky;
+            top: 80px;
+            padding: 32px;
+            background: linear-gradient(135deg, var(--bg-tertiary), rgba(255, 255, 255, 0.02));
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            font-size: 14px;
+        }
+
+        .reference-card h4 {
+            margin-bottom: 8px;
+            font-size: 18px;
+        }
+
+        .reference-subtitle {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+        }
+
+        .reference-content {
+            color: var(--text-secondary);
+            line-height: 1.8;
+        }
+
+        .reference-divider {
+            height: 1px;
+            background: var(--border);
+            margin: 24px 0;
+        }
+
+        .reference-scores {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .reference-score-item {
+            display: flex;
+            align-items: start;
+            gap: 12px;
+        }
+
+        .reference-score-number {
+            font-size: 18px;
+            font-weight: 700;
+            min-width: 32px;
+        }
+
+        .reference-score-desc {
+            flex: 1;
+        }
+
+        .reference-score-desc strong {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 13px;
+        }
+
+        .reference-score-desc p {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        /* Footer */
+        footer {
+            padding: 60px 0 80px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            margin-top: 120px;
+            margin-bottom: 60px;
+        }
+
+        .footer-content {
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .footer-logo {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 16px;
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .footer-logo svg {
+            color: var(--accent-blue);
+        }
+
+        .footer-description {
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .footer-tagline {
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 40px;
+            }
+
+            .hero-subtitle {
+                font-size: 18px;
+            }
+
+            .hero-cta {
+                font-size: 20px;
+            }
+
+            .section-title {
+                font-size: 32px;
+            }
+
+            .scorer-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .reference-card {
+                position: static;
+            }
+
+            .nav-items {
+                display: none;
+            }
+
+            .axis-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .philosophy-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .warning-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Color classes */
+        .text-blue { color: var(--accent-blue); }
+        .text-green { color: var(--accent-green); }
+        .text-purple { color: var(--accent-purple); }
+        .text-yellow { color: var(--accent-yellow); }
+        .text-red { color: var(--accent-red); }
+        .text-cyan { color: var(--accent-cyan); }
+        .text-orange { color: var(--accent-orange); }
+
+        .bg-blue { background: var(--accent-blue); }
+        .bg-green { background: var(--accent-green); }
+        .bg-purple { background: var(--accent-purple); }
+        .bg-yellow { background: var(--accent-yellow); }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-in {
+            animation: fadeInUp 0.6s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav id="navigation">
+        <div class="nav-content">
+            <div class="nav-logo">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <circle cx="12" cy="12" r="4"/>
+                </svg>
+                <span>HUNT</span>
+            </div>
+            <div class="nav-items">
+                <button class="nav-item" onclick="scrollToTop()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <circle cx="12" cy="12" r="6"/>
+                        <circle cx="12" cy="12" r="2"/>
+                    </svg>
+                    HUNT
+                </button>
+                <button class="nav-item" onclick="scrollToSection('dimensions')">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M12 1v6m0 6v6m6-12h-6m-6 0h6M5.64 5.64l4.24 4.24m4.24 4.24l4.24 4.24M5.64 18.36l4.24-4.24m4.24-4.24l4.24-4.24"/>
+                    </svg>
+                    Dimensions
+                </button>
+                <button class="nav-item" onclick="scrollToSection('philosophy')">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    Philosophy
+                </button>
+                <button class="nav-item" onclick="scrollToSection('calculator')">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="4" y="2" width="16" height="20" rx="2"/>
+                        <line x1="8" y1="6" x2="16" y2="6"/>
+                        <line x1="16" y1="14" x2="16" y2="14.01"/>
+                        <line x1="12" y1="14" x2="12" y2="14.01"/>
+                        <line x1="8" y1="14" x2="8" y2="14.01"/>
+                    </svg>
+                    Evaluate
+                </button>
+                <button class="nav-item" onclick="scrollToSection('reviews')">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                        <polyline points="10 9 9 9 8 9"/>
+                    </svg>
+                    Reviews
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-badge">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <circle cx="12" cy="12" r="4"/>
+                </svg>
+                Game Evaluation Framework
+            </div>
+            <h1>THE HUNT FRAMEWORK</h1>
+            <p class="hero-subtitle">
+                A system for evaluating games based on <span class="text-blue">embodied agency</span>, not hype.<br>
+                Built for players who chase <span class="text-purple">mastery</span>, not content.
+            </p>
+            <p class="hero-cta">Stop consuming. Start hunting.</p>
+            <div class="hero-grid">
+                <div class="hero-card blue">
+                    <div class="hero-card-letter text-blue">H</div>
+                    <div class="hero-card-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent-blue)">
+                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                        </svg>
+                    </div>
+                    <div class="hero-card-name">Handling</div>
+                </div>
+                <div class="hero-card green">
+                    <div class="hero-card-letter text-green">U</div>
+                    <div class="hero-card-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent-green)">
+                            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+                            <polyline points="17 6 23 6 23 12"/>
+                        </svg>
+                    </div>
+                    <div class="hero-card-name">Unlocks</div>
+                </div>
+                <div class="hero-card purple">
+                    <div class="hero-card-letter text-purple">N</div>
+                    <div class="hero-card-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent-purple)">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                            <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                    </div>
+                    <div class="hero-card-name">Novelty</div>
+                </div>
+                <div class="hero-card yellow">
+                    <div class="hero-card-letter text-yellow">T</div>
+                    <div class="hero-card-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent-yellow)">
+                            <circle cx="12" cy="12" r="10"/>
+                            <circle cx="12" cy="12" r="6"/>
+                            <circle cx="12" cy="12" r="2"/>
+                        </svg>
+                    </div>
+                    <div class="hero-card-name">Tell</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Dimensions Section -->
+    <section id="dimensions">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">The Four Dimensions</h2>
+                <p class="section-subtitle">
+                    Each axis is scored independently from 1–10. A game doesn't need 10s across the board, but imbalances matter.
+                </p>
+            </div>
+            <div class="axis-grid">
+                <div class="axis-card blue">
+                    <div class="axis-header">
+                        <div class="axis-icon blue">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                            </svg>
+                        </div>
+                        <div class="axis-title-group">
+                            <h3>
+                                <span class="axis-letter blue">H</span>
+                                <span class="axis-title">Handling</span>
+                            </h3>
+                            <div class="axis-subtitle">Mobility Under Resistance</div>
+                        </div>
+                    </div>
+                    <p class="axis-description">
+                        How motion, combat, and interaction feel when the game pushes back. This is not speed. This is control under constraint.
+                    </p>
+                    <ul class="axis-examples">
+                        <li>Movement is gameplay</li>
+                        <li>Precision and recovery are learned</li>
+                        <li>Mastery improves flow, not just output</li>
+                    </ul>
+                </div>
+
+                <div class="axis-card green">
+                    <div class="axis-header">
+                        <div class="axis-icon green">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+                                <polyline points="17 6 23 6 23 12"/>
+                            </svg>
+                        </div>
+                        <div class="axis-title-group">
+                            <h3>
+                                <span class="axis-letter green">U</span>
+                                <span class="axis-title">Unlocks</span>
+                            </h3>
+                            <div class="axis-subtitle">Capability Expansion</div>
+                        </div>
+                    </div>
+                    <p class="axis-description">
+                        Whether progression changes what you can do, not just how hard numbers hit. Unlocks must open space, not just fill bars.
+                    </p>
+                    <ul class="axis-examples">
+                        <li>Unlocks add verbs</li>
+                        <li>Build identity emerges</li>
+                        <li>Progression creates new problems</li>
+                    </ul>
+                </div>
+
+                <div class="axis-card purple">
+                    <div class="axis-header">
+                        <div class="axis-icon purple">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                            </svg>
+                        </div>
+                        <div class="axis-title-group">
+                            <h3>
+                                <span class="axis-letter purple">N</span>
+                                <span class="axis-title">Novelty</span>
+                            </h3>
+                            <div class="axis-subtitle">Epistemic Openness</div>
+                        </div>
+                    </div>
+                    <p class="axis-description">
+                        How long the game stays unknown. Novelty is not content volume. It's unexhausted possibility.
+                    </p>
+                    <ul class="axis-examples">
+                        <li>Systems resist total understanding</li>
+                        <li>Meta evolves through play</li>
+                        <li>Players argue about "the right way"</li>
+                    </ul>
+                </div>
+
+                <div class="axis-card yellow">
+                    <div class="axis-header">
+                        <div class="axis-icon yellow">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"/>
+                                <circle cx="12" cy="12" r="6"/>
+                                <circle cx="12" cy="12" r="2"/>
+                            </svg>
+                        </div>
+                        <div class="axis-title-group">
+                            <h3>
+                                <span class="axis-letter yellow">T</span>
+                                <span class="axis-title">Tell</span>
+                            </h3>
+                            <div class="axis-subtitle">Visibility of Mastery</div>
+                        </div>
+                    </div>
+                    <p class="axis-description">
+                        Whether skill leaves visible, legible traces. This is not competitiveness. This is recognizability.
+                    </p>
+                    <ul class="axis-examples">
+                        <li>Mastery announces itself</li>
+                        <li>Style emerges</li>
+                        <li>Spectating reveals competence</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Philosophy Section -->
+    <section id="philosophy">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Design Philosophy</h2>
+                <p class="section-subtitle">
+                    HUNT doesn't ask if a game is "good." It asks if a game gives you something to hunt.
+                </p>
+            </div>
+
+            <div class="philosophy-grid">
+                <div class="philosophy-card">
+                    <h3>Agency > Content</h3>
+                    <p>The ability to act meaningfully matters more than the volume of things to do.</p>
+                </div>
+                <div class="philosophy-card">
+                    <h3>Learning > Consumption</h3>
+                    <p>Discovery through play is more satisfying than checking off content lists.</p>
+                </div>
+                <div class="philosophy-card">
+                    <h3>Mastery Changes Perception</h3>
+                    <p>Skill should transform how you see the game, not just your damage numbers.</p>
+                </div>
+                <div class="philosophy-card">
+                    <h3>Systems Resist Comprehension</h3>
+                    <p>The best games continue teaching without tutorials, revealing depth over time.</p>
+                </div>
+            </div>
+
+            <div class="section-header" style="margin-top: 80px;">
+                <h2 class="section-title">
+                    Warning Patterns
+                </h2>
+                <p class="section-subtitle">
+                    Imbalances that lead to burnout, boredom, or isolation
+                </p>
+            </div>
+
+            <div class="warning-grid">
+                <div class="warning-card">
+                    <p class="warning-pattern">High H + Low U</p>
+                    <p class="warning-result">→ Feels good, burns out</p>
+                </div>
+                <div class="warning-card">
+                    <p class="warning-pattern">High U + Low H</p>
+                    <p class="warning-result">→ Progression treadmill</p>
+                </div>
+                <div class="warning-card">
+                    <p class="warning-pattern">High N + Low T</p>
+                    <p class="warning-result">→ Interesting but isolating</p>
+                </div>
+                <div class="warning-card">
+                    <p class="warning-pattern">High T + Low N</p>
+                    <p class="warning-result">→ Solved meta, stagnation</p>
+                </div>
+            </div>
+
+            <p class="sustainability-note">
+                Sustainable games cluster at <span class="text-green">7+ in three axes</span>, with Handling <span class="text-blue">never below 6</span>.
+            </p>
+        </div>
+    </section>
+
+    <!-- Calculator Section -->
+    <section id="calculator">
+        <div class="container">
+            <div class="section-header">
+                <div class="calculator-badge">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="4" y="2" width="16" height="20" rx="2"/>
+                        <line x1="8" y1="6" x2="16" y2="6"/>
+                        <line x1="16" y1="14" x2="16" y2="14.01"/>
+                        <line x1="12" y1="14" x2="12" y2="14.01"/>
+                        <line x1="8" y1="14" x2="8" y2="14.01"/>
+                        <line x1="16" y1="18" x2="16" y2="18.01"/>
+                        <line x1="12" y1="18" x2="12" y2="18.01"/>
+                        <line x1="8" y1="18" x2="8" y2="18.01"/>
+                    </svg>
+                    Interactive Tool
+                </div>
+                <h2 class="section-title">
+                    Evaluate Your Games
+                </h2>
+                <p class="section-subtitle">
+                    Use the sliders to score a game across all four HUNT dimensions
+                </p>
+            </div>
+
+            <div class="calculator-wrapper">
+                <div class="calculator-inner">
+                    <div class="scorer-layout">
+                        <div>
+                            <div class="slider-group">
+                                <div class="slider-header">
+                                    <label class="slider-label">
+                                        <span id="handling-letter" class="slider-letter text-blue">H</span>
+                                        <span class="slider-title">Handling</span>
+                                    </label>
+                                    <span id="handling-value" class="slider-value text-blue">5</span>
+                                </div>
+                                <p class="slider-subtitle">Mobility Under Resistance</p>
+                                <input type="range" id="handling" class="blue" min="1" max="10" value="5" oninput="updateSlider('handling')">
+                            </div>
+
+                            <div class="slider-group">
+                                <div class="slider-header">
+                                    <label class="slider-label">
+                                        <span id="unlocks-letter" class="slider-letter text-green">U</span>
+                                        <span class="slider-title">Unlocks</span>
+                                    </label>
+                                    <span id="unlocks-value" class="slider-value text-green">5</span>
+                                </div>
+                                <p class="slider-subtitle">Capability Expansion</p>
+                                <input type="range" id="unlocks" class="green" min="1" max="10" value="5" oninput="updateSlider('unlocks')">
+                            </div>
+
+                            <div class="slider-group">
+                                <div class="slider-header">
+                                    <label class="slider-label">
+                                        <span id="novelty-letter" class="slider-letter text-purple">N</span>
+                                        <span class="slider-title">Novelty</span>
+                                    </label>
+                                    <span id="novelty-value" class="slider-value text-purple">5</span>
+                                </div>
+                                <p class="slider-subtitle">Epistemic Openness</p>
+                                <input type="range" id="novelty" class="purple" min="1" max="10" value="5" oninput="updateSlider('novelty')">
+                            </div>
+
+                            <div class="slider-group">
+                                <div class="slider-header">
+                                    <label class="slider-label">
+                                        <span id="tell-letter" class="slider-letter text-yellow">T</span>
+                                        <span class="slider-title">Tell</span>
+                                    </label>
+                                    <span id="tell-value" class="slider-value text-yellow">5</span>
+                                </div>
+                                <p class="slider-subtitle">Visibility of Mastery</p>
+                                <input type="range" id="tell" class="yellow" min="1" max="10" value="5" oninput="updateSlider('tell')">
+                            </div>
+                        </div>
+
+                        <div class="reference-card">
+                            <h4>Current Scores</h4>
+                            <p class="reference-subtitle">What these scores mean</p>
+                            <div class="reference-content">
+                                <div class="reference-scores">
+                                    <div class="reference-score-item">
+                                        <div id="ref-h-number" class="reference-score-number text-yellow">5</div>
+                                        <div class="reference-score-desc">
+                                            <strong id="ref-h-label" class="text-yellow">H: Handling</strong>
+                                            <p id="ref-h-desc">Responsive baseline. Some cancel windows or tech. Combat readable but limited.</p>
+                                        </div>
+                                    </div>
+                                    <div class="reference-score-item">
+                                        <div id="ref-u-number" class="reference-score-number text-yellow">5</div>
+                                        <div class="reference-score-desc">
+                                            <strong id="ref-u-label" class="text-yellow">U: Unlocks</strong>
+                                            <p id="ref-u-desc">New tools appear. Some choice, little consequence. Mastery mostly frontloaded.</p>
+                                        </div>
+                                    </div>
+                                    <div class="reference-score-item">
+                                        <div id="ref-n-number" class="reference-score-number text-yellow">5</div>
+                                        <div class="reference-score-desc">
+                                            <strong id="ref-n-label" class="text-yellow">N: Novelty</strong>
+                                            <p id="ref-n-desc">Systems interact in light ways. Occasional discovery. Knowledge has diminishing returns.</p>
+                                        </div>
+                                    </div>
+                                    <div class="reference-score-item">
+                                        <div id="ref-t-number" class="reference-score-number text-yellow">5</div>
+                                        <div class="reference-score-desc">
+                                            <strong id="ref-t-label" class="text-yellow">T: Tell</strong>
+                                            <p id="ref-t-desc">Some readable patterns. Observers can infer experience.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Reviews Section - Moved to separate page (reviews.html) -->
+    <!--
+    <section id="reviews">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Game Reviews</h2>
+                <p class="section-subtitle">
+                    Games evaluated through the HUNT framework
+                </p>
+            </div>
+
+            <div class="reviews-grid">
+                <div class="review-card">
+                    <div class="review-header">
+                        <div class="review-info">
+                            <h3 class="review-title">Vintage Story</h3>
+                            <p class="review-subtitle">A voxel survival game that respects your intelligence</p>
+                        </div>
+                        <span class="review-badge">In Progress</span>
+                    </div>
+                    <div class="review-tags">
+                        <span class="tag">Survival</span>
+                        <span class="tag">Voxel</span>
+                        <span class="tag">Crafting</span>
+                    </div>
+                    <div class="review-scores">
+                        <div class="review-score">
+                            <div class="score-number text-blue">5</div>
+                            <div class="score-label">H</div>
+                        </div>
+                        <div class="review-score">
+                            <div class="score-number text-green">9</div>
+                            <div class="score-label">U</div>
+                        </div>
+                        <div class="review-score">
+                            <div class="score-number text-purple">9</div>
+                            <div class="score-label">N</div>
+                        </div>
+                        <div class="review-score">
+                            <div class="score-number text-yellow">6</div>
+                            <div class="score-label">T</div>
+                        </div>
+                    </div>
+                    <a href="#" class="review-link">
+                        Read Full Review
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="5" y1="12" x2="19" y2="12"/>
+                            <polyline points="12 5 19 12 12 19"/>
+                        </svg>
+                    </a>
+                </div>
+
+                <div class="review-card coming-soon">
+                    <div class="coming-soon-content">
+                        <h3>More reviews coming soon</h3>
+                        <p>Currently hunting through my backlog</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    -->
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <circle cx="12" cy="12" r="6"/>
+                        <circle cx="12" cy="12" r="2"/>
+                    </svg>
+                    <span>HUNT</span>
+                </div>
+                <p class="footer-description">
+                    A personal framework for evaluating games through the lens of agency, mastery, and discovery.
+                </p>
+                <p class="footer-tagline">If nothing is left to chase, the hunt ends.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Navigation scroll behavior
+        const nav = document.getElementById('navigation');
+        
+        window.addEventListener('scroll', () => {
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            
+            if (scrollTop > 100) {
+                nav.classList.add('visible');
+            } else {
+                nav.classList.remove('visible');
+            }
+        });
+
+        function scrollToSection(id) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Score descriptions
+        const scoreDescriptions = {
+            handling: {
+                1: 'Sluggish input, long animation locks with little payoff.',
+                2: 'Sluggish input, long animation locks with little payoff.',
+                3: 'Functional but rigid. Movement is solved quickly.',
+                4: 'Functional but rigid. Movement is solved quickly.',
+                5: 'Responsive baseline. Some cancel windows or tech.',
+                6: 'Responsive baseline. Some cancel windows or tech.',
+                7: 'Momentum matters. Skilled play looks different.',
+                8: 'Momentum matters. Skilled play looks different.',
+                9: 'Movement is gameplay. Precision and recovery are learned.',
+                10: 'Movement is gameplay. Precision and recovery are learned.'
+            },
+            unlocks: {
+                1: 'Statistical only. Progression feels optional.',
+                2: 'Statistical only. Progression feels optional.',
+                3: 'Linear upgrades. One obvious path.',
+                4: 'Linear upgrades. One obvious path.',
+                5: 'New tools appear. Some choice, little consequence.',
+                6: 'New tools appear. Some choice, little consequence.',
+                7: 'Unlocks add verbs. Build identity emerges.',
+                8: 'Unlocks add verbs. Build identity emerges.',
+                9: 'Unlocks reshape playstyle. Creates new problems.',
+                10: 'Unlocks reshape playstyle. Creates new problems.'
+            },
+            novelty: {
+                1: 'Fully legible in tutorial. Optimal play obvious.',
+                2: 'Fully legible in tutorial. Optimal play obvious.',
+                3: 'Some hidden mechanics. Quickly mapped.',
+                4: 'Some hidden mechanics. Quickly mapped.',
+                5: 'Systems interact in light ways. Occasional discovery.',
+                6: 'Systems interact in light ways. Occasional discovery.',
+                7: 'Mechanics reveal depth late. Systems resist understanding.',
+                8: 'Mechanics reveal depth late. Systems resist understanding.',
+                9: 'Game continues teaching without instruction.',
+                10: 'Game continues teaching without instruction.'
+            },
+            tell: {
+                1: 'Skill is invisible. Everyone looks the same.',
+                2: 'Skill is invisible. Everyone looks the same.',
+                3: 'Efficiency differs but hard to see.',
+                4: 'Efficiency differs but hard to see.',
+                5: 'Some readable patterns. Observers can infer experience.',
+                6: 'Some readable patterns. Observers can infer experience.',
+                7: 'Skill changes pacing. Spectating reveals competence.',
+                8: 'Skill changes pacing. Spectating reveals competence.',
+                9: 'Mastery announces itself. Style emerges.',
+                10: 'Mastery announces itself. Style emerges.'
+            }
+        };
+
+        function getColorClass(value) {
+            if (value <= 3) return 'text-red';
+            if (value <= 6) return 'text-yellow';
+            if (value <= 8) return 'text-blue';
+            return 'text-green';
+        }
+
+        function updateSlider(axis) {
+            const slider = document.getElementById(axis);
+            const value = parseInt(slider.value);
+            const colorClass = getColorClass(value);
+            
+            // Update the slider fill
+            const fillPercent = ((value - 1) / 9) * 100;
+            slider.style.setProperty('--fill-percent', fillPercent + '%');
+            
+            // Update the number display
+            const valueDisplay = document.getElementById(axis + '-value');
+            valueDisplay.textContent = value;
+            valueDisplay.className = 'slider-value ' + colorClass;
+            
+            // Update the letter color
+            const letterDisplay = document.getElementById(axis + '-letter');
+            letterDisplay.className = 'slider-letter ' + colorClass;
+            
+            // Update the reference card
+            updateReferenceCard(axis, value, colorClass);
+        }
+
+        function updateReferenceCard(axis, value, colorClass) {
+            const shortAxis = axis.charAt(0).toLowerCase();
+            const description = scoreDescriptions[axis][value];
+            
+            // Update the corresponding reference item
+            document.getElementById(`ref-${shortAxis}-number`).textContent = value;
+            document.getElementById(`ref-${shortAxis}-number`).className = 'reference-score-number ' + colorClass;
+            document.getElementById(`ref-${shortAxis}-label`).className = colorClass;
+            document.getElementById(`ref-${shortAxis}-desc`).textContent = description;
+        }
+
+        // Initialize all sliders
+        ['handling', 'unlocks', 'novelty', 'tell'].forEach(axis => {
+            updateSlider(axis);
+        });
+    </script>
+</body>
+</html>
